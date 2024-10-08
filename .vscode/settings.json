@@ -1,0 +1,10 @@
+{
+    "eslint.workingDirectories": [
+        {
+        "mode": "auto" // tsconfig.jsonのあるディレクトリを自動で探してくれる
+        }
+    ],
+    "editor.defaultFormatter": "esbenp.prettier-vscode", // prettierをデフォルトのフォーマッターに設定
+    "editor.formatOnSave": true, // prettierの自動修正
+    "typescript.tsdk": "node_modules/typescript/lib" // vocodeで使用するtypescriptのバージョンをプロジェクトに合わせる
+}
