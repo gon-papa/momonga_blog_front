@@ -27,6 +27,8 @@
     "packages/*"
   ],
   "dependencies": {
+    "@hey-api/client-fetch": "^0.4.0",
+    "@hey-api/openapi-ts": "^0.53.8",
     "@hookform/resolvers": "^3.9.0",
     "react-hook-form": "^7.53.0",
     "zod": "^3.23.8"

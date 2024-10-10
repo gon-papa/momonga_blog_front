@@ -1,0 +1,616 @@
+openapi: 3.0.0
+info:
+  title: momonga blog API
+  version: 1.0.0
+  description: momonga blog API
+servers:
+  - url: http://localhost:8080
+    description: Local server
+  - url: https://hogehogehogedummy.com
+    description: Production server
+paths:
+  /api/login:
+    post:
+      tags:
+        - admin
+      summary: Admin login
+      description: Admin login
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/LoginSuccess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /api/logout:
+    post:
+      tags:
+        - admin
+      summary: Admin logout
+      description: Admin logout
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/NotContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /api/refresh:
+    post:
+      tags:
+        - admin
+      summary: Admin refresh token
+      description: Admin refresh token
+      operationId: refresh_token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/RefreshSuccess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /api/admin/blog:
+    get:
+      tags:
+        - blog
+      summary: Get blog list
+      description: Get blog list
+      operationId: getBlogList
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlogListSuccess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags:
+        - blog
+      summary: Create blog post
+      description: Create blog post
+      operationId: createBlogPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPostRequest'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/NotContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /api/admin/blog/{uuid}:
+    get:
+      tags:
+        - blog
+      summary: Get blog
+      description: Get blog
+      operationId: getBlog
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Uuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/BlogSuccess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    put:
+      tags:
+        - blog
+      summary: Update blog
+      description: Update blog
+      operationId: updateBlog
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogUpdateRequest'
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Uuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/NotContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /api/admin/tags:
+    get:
+      tags:
+        - tag
+      summary: Get tag list
+      description: Get tag list
+      operationId: getTagList
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/QueryUuid'
+      responses:
+        '200':
+          $ref: '#/components/responses/TagListSuccess'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      tags:
+        - tag
+      summary: Create tag
+      description: Create tag
+      operationId: createTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagCreateRequest'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/NotContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+  /api/admin/image/upload:
+    post:
+      tags:
+        - admin
+      summary: Admin image upload
+      description: Admin image upload
+      operationId: uploadImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: image file
+              required:
+                - image
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          $ref: '#/components/responses/NotContent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          description: User ID
+        password:
+          type: string
+          description: Password
+      required:
+        - user_id
+        - password
+    LoginResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT token
+            refreshToken:
+              type: string
+              description: Refresh token
+          required:
+            - token
+            - refreshToken
+        error:
+          type: object
+      required:
+        - status
+        - data
+        - error
+    RefreshRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh token
+      required:
+        - refresh_token
+    RefreshResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT token
+            refreshToken:
+              type: string
+              description: Refresh token
+          required:
+            - token
+            - refreshToken
+        error:
+          type: object
+      required:
+        - status
+        - data
+        - error
+    Tag:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 12345678-1234-1234-1234-123456789012
+        name:
+          type: string
+          example: momonga
+    Blog:
+      type: object
+      properties:
+        uuid:
+          type: string
+          example: 12345678-1234-1234-1234-123456789012
+        year:
+          type: integer
+          example: 2021
+        month:
+          type: integer
+          example: 1
+        day:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: momonga blog
+        body:
+          type: string
+          example: momonga blog body
+        is_show:
+          type: boolean
+          example: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        created_at:
+          type: string
+          example: '2021-01-01T00:00:00Z'
+        updated_at:
+          type: string
+          example: '2021-01-01T00:00:00Z'
+        deleted_at:
+          type: string
+          example: '2021-01-01T00:00:00Z'
+    Pagenation:
+      type: object
+      properties:
+        total:
+          type: integer
+          format: int64
+          example: 1
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+      required:
+        - total
+        - page
+        - limit
+    BlogListResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            blogs:
+              type: array
+              items:
+                $ref: '#/components/schemas/Blog'
+            pagenation:
+              $ref: '#/components/schemas/Pagenation'
+          required:
+            - blogs
+            - pagenation
+        error:
+          type: object
+      required:
+        - status
+        - data
+        - error
+    BlogPostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: title of the blog post
+          maxLength: 255
+          minLength: 1
+        body:
+          type: string
+          description: body of the blog post
+          minLength: 1
+        is_show:
+          type: boolean
+          description: whether the blog post is shown or not
+        tag_uuids:
+          type: array
+          items:
+            type: string
+            description: uuids of the tags of the blog post
+            format: uuid
+          description: tags of the blog post
+      required:
+        - title
+        - body
+        - is_show
+        - tags
+    BlogResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            blog:
+              $ref: '#/components/schemas/Blog'
+            tags:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tag'
+          required:
+            - blogs
+        error:
+          type: object
+      required:
+        - status
+        - data
+        - error
+    BlogUpdateRequest:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: uuid of the blog post
+          format: uuid
+        title:
+          type: string
+          description: title of the blog post
+          maxLength: 255
+          minLength: 1
+        body:
+          type: string
+          description: body of the blog post
+          minLength: 1
+        is_show:
+          type: boolean
+          description: whether the blog post is shown or not
+        tag_uuids:
+          type: array
+          items:
+            type: string
+            description: uuids of the tags of the blog post
+            format: uuid
+          description: tags of the blog post
+      required:
+        - title
+        - body
+        - is_show
+        - tags
+    TagListResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          example: 200
+        data:
+          type: object
+          properties:
+            tags:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tag'
+          required:
+            - tags
+        error:
+          type: object
+      required:
+        - status
+        - data
+        - error
+    TagCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Tag name
+      required:
+        - name
+  responses:
+    ErrorResponse:
+      description: Error Response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 500
+              data:
+                type: object
+              error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+            required:
+              - status
+              - data
+              - error
+    LoginSuccess:
+      description: Admin login response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginResponse'
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 400
+              data:
+                type: object
+              error:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Bad Request
+            required:
+              - status
+              - data
+              - error
+    NotContent:
+      description: NotContent Request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: integer
+                example: 200
+              data:
+                type: object
+              error:
+                type: object
+            required:
+              - status
+              - data
+              - error
+    RefreshSuccess:
+      description: Admin refresh token response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefreshResponse'
+    BlogListSuccess:
+      description: Admin blog list
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BlogListResponse'
+    BlogSuccess:
+      description: Admin blog
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BlogResponse'
+    TagListSuccess:
+      description: Admin tag list
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TagListResponse'
+  parameters:
+    Page:
+      name: page
+      in: query
+      description: Page number
+      required: false
+      schema:
+        type: integer
+        format: int
+    Limit:
+      name: limit
+      in: query
+      description: Number of items per page
+      required: false
+      schema:
+        type: integer
+        format: int
+    Uuid:
+      name: uuid
+      in: path
+      description: UUID
+      required: true
+      schema:
+        type: string
+        format: uuid
+    QueryUuid:
+      name: uuid
+      in: query
+      description: UUID
+      required: false
+      schema:
+        type: string
+        format: uuid
+        minLength: 0
+        maxLength: 36
