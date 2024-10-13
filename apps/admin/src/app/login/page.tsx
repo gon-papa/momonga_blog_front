@@ -1,10 +1,9 @@
 "use client";
 
-import { onSubmitFormAction, useLoginForm } from "./login_service";
+import { useLoginForm, onSubmit } from "./login_service";
 
 export default function Login() {
-  const { handleSubmit, register, formState } = useLoginForm();
-  const serverAction = onSubmitFormAction;
+  const { register, formState, handleSubmit } = useLoginForm();
 
   return (
     <>
@@ -13,10 +12,7 @@ export default function Login() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Login
           </h2>
-          <form
-            onSubmit={handleSubmit(serverAction)}
-            className="mt-8 space-y-6"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
             <div className="relative">
               <label
                 htmlFor="id"
@@ -25,15 +21,15 @@ export default function Login() {
                 ID
               </label>
               <input
-                {...register("id")}
-                id="id"
-                name="id"
+                {...register("user_id")}
+                id="user_id"
+                name="user_id"
                 type="text"
-                autoComplete="id"
+                autoComplete="user_id"
                 className="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
               <p className="text-red-500 mt-2 mx-1">
-                {formState.errors.id && formState.errors.id.message}
+                {formState.errors.user_id && formState.errors.user_id.message}
               </p>
             </div>
 

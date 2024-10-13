@@ -13,7 +13,9 @@ schema:
 	rm -rf momonga_blog
 	rm -f ./openapi.yml
 	git clone -b $(BRANCH) $(REPO)
-	rm -rf packages/api
+	if [ -d packages/api ]; then \
+		find packages/api -mindepth 1 ! -name 'package.json' ! -name 'tsconfig.json' -exec rm -rf {} + ;\
+	fi
 	mv momonga_blog/openapi.yml .
 	rm -rf momonga_blog
 	npx openapi-ts -i openapi.yml -o packages/api -c @hey-api/client-fetch;

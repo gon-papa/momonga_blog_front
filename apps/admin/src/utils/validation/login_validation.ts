@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const loginValidation = z.object({
-  id: z
+  user_id: z
     .string({ message: "idは4文字以上である必要があります。" })
     .min(4, "idは4文字以上である必要があります。")
     .max(20, "idは20文字以下である必要があります。"),
