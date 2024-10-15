@@ -18,3 +18,10 @@ export const getTokens = () => {
   }
   return { token: null, refreshToken: null };
 };
+
+export const removeTokens = () => {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("momongaBlogAccessToken");
+    localStorage.removeItem("momongaBlogRefreshToken");
+  }
+};

@@ -1,7 +1,12 @@
 import { Client, createClient } from "@hey-api/client-fetch";
 import { login, LoginRequest, LoginResponse } from "@repo/api";
-import { Failure, PromiseResult, Success } from "../../utils/result";
-import { AuthError, InternalServerError } from "../../utils/error/error";
+import {
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../../utils/error/error";
 
 const loginFeatch = (request: Request) => {
   return fetch(request, {
@@ -16,34 +21,90 @@ const client: Client = createClient({
   headers: {
     "Content-Type": "application/json",
   },
+  fetch: loginFeatch,
 });
+
+type LoginResponseWrapper = {
+  data: LoginResponse | undefined;
+  error: Error | null;
+  result: boolean;
+};
 
 export const loginFetch = async (
   data: LoginRequest
-): PromiseResult<LoginResponse, Error> => {
+): Promise<LoginResponseWrapper> => {
   try {
-    const res = await login({
+    const result = await login({
       client,
       body: data,
     });
-
-    if (res.error) {
-      if (res.error.status !== 200) {
-        const message: string = res.error?.error.message ?? "unknown error";
-        const failed = new AuthError(message);
-        return new Failure(failed);
-      }
-      let failed = new InternalServerError("Internal server error");
-      throw new InternalServerError("Internal server error");
+    const err = checkStatus({
+      httpStatus: result.response.status,
+      errMessage: result.error?.error.message ?? "unknown error",
+    });
+    if (err) {
+      throw err;
     }
 
-    if (res.data) {
-      return new Success(res.data);
+    if (result.data === undefined) {
+      return {
+        data: undefined,
+        error: new Error("data is undefined"),
+        result: false,
+      };
     }
-
-    return new Failure(new InternalServerError("No data received"));
+    return {
+      data: result.data,
+      error: null,
+      result: true,
+    };
   } catch (e) {
-    console.log(e);
-    return new Failure(new Error("Unknown error"));
+    console.error(e);
+    if (e instanceof Error) {
+      return {
+        data: undefined,
+        error: e,
+        result: false,
+      };
+    }
+
+    return {
+      data: undefined,
+      error: new Error("unknown error"),
+      result: false,
+    };
   }
 };
+
+function checkStatus({
+  httpStatus,
+  errMessage,
+}: {
+  httpStatus: number;
+  errMessage: string;
+}): Error | null {
+  if (httpStatus >= 400 && httpStatus < 500) {
+    switch (httpStatus) {
+      case 400:
+        console.log(errMessage);
+        return new BadRequestError("Bad Request");
+      case 401:
+        console.log(errMessage);
+        return new UnauthorizedError("Unauthorized");
+      case 403:
+        console.log(errMessage);
+        return new ForbiddenError("Forbidden");
+      case 404:
+        console.log(errMessage);
+        return new NotFoundError("Not Found");
+      default:
+        console.log(errMessage);
+        return new Error(`Client Error: ${httpStatus}`);
+    }
+  } else if (httpStatus >= 500) {
+    console.log(errMessage);
+    return new InternalServerError(`Server Error: ${httpStatus}`);
+  }
+
+  return null;
+}

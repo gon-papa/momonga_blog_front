@@ -5,17 +5,9 @@ import {
   loginValidation,
 } from "../../utils/validation/login_validation";
 import { loginFetch } from "./login_repository";
-import { Failure } from "../../utils/result";
-import { AuthError, InternalServerError } from "../../utils/error/error";
-import {
-  saveToken,
-  saveRefreshToken,
-} from "../../utils/repository/auth_repository";
-
-type Tokens = {
-  token: string;
-  refreshToken: string;
-};
+import { loggedInSaveTokens } from "../../utils/auth/auth_service";
+import { LoginResponse } from "@repo/api";
+import { redirect } from "next/navigation";
 
 export function useLoginForm() {
   const { register, handleSubmit, setValue, formState, control, watch } =
@@ -39,22 +31,29 @@ export function useLoginForm() {
 
 export async function onSubmit(data: loginFormSchema) {
   const res = await loginFetch(data);
-
-  if (res instanceof Failure) {
-    if (res.getValue() instanceof AuthError) {
-      console.error(res.getValue().message);
-      throw res.getValue();
-    }
-
-    if (res.getValue() instanceof InternalServerError) {
-      console.error(res.getValue().message);
-      throw res.getValue();
-    }
-
-    throw res.getValue();
+  if (res.error) {
+    failure(res.error);
+    return;
   }
 
-  const tokens: Tokens = res.getValue().data;
-  saveToken(tokens.token);
-  saveRefreshToken(tokens.refreshToken);
+  if (res.data) {
+    success(res.data);
+  }
+
+  return;
 }
+
+const success = (res: LoginResponse) => {
+  if (res.data) {
+    const token = res.data.token;
+    const refreshToken = res.data.refreshToken;
+
+    loggedInSaveTokens({ token, refreshToken });
+    console.log("login success");
+    window.location.href = "/";
+  }
+};
+
+const failure = (error: Error) => {
+  console.error(error);
+};
