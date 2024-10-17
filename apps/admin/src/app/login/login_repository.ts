@@ -24,13 +24,13 @@ const client: Client = createClient({
   fetch: loginFeatch,
 });
 
-type LoginResponseWrapper = {
+export type LoginResponseWrapper = {
   data: LoginResponse | undefined;
   error: Error | null;
   result: boolean;
 };
 
-export const loginFetch = async (
+export const loginPost = async (
   data: LoginRequest
 ): Promise<LoginResponseWrapper> => {
   try {

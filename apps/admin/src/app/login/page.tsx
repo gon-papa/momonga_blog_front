@@ -1,9 +1,11 @@
 "use client";
 
-import { useLoginForm, onSubmit } from "./login_service";
+import { useFormState, useFormStatus } from "react-dom";
+import { initialState, loginAction } from "./login_service";
 
 export default function Login() {
-  const { register, formState, handleSubmit } = useLoginForm();
+  const [state, dispatch] = useFormState(loginAction, initialState);
+  // const status = useFormStatus();
 
   return (
     <>
@@ -12,7 +14,7 @@ export default function Login() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Login
           </h2>
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
+          <form action={dispatch} className="mt-8 space-y-6">
             <div className="relative">
               <label
                 htmlFor="id"
@@ -21,7 +23,6 @@ export default function Login() {
                 ID
               </label>
               <input
-                {...register("user_id")}
                 id="user_id"
                 name="user_id"
                 type="text"
@@ -29,7 +30,7 @@ export default function Login() {
                 className="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
               <p className="text-red-500 mt-2 mx-1">
-                {formState.errors.user_id && formState.errors.user_id.message}
+                {state.zod_errors.user_id && state.zod_errors.user_id[0]}
               </p>
             </div>
 
@@ -41,7 +42,6 @@ export default function Login() {
                 パスワード
               </label>
               <input
-                {...register("password")}
                 id="password"
                 name="password"
                 type="password"
@@ -49,20 +49,40 @@ export default function Login() {
                 className="block w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-500"
               />
               <p className="text-red-500 mt-2 mx-1">
-                {formState.errors.password && formState.errors.password.message}
+                {state.zod_errors.password && state.zod_errors.password[0]}
               </p>
             </div>
 
             <div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
-              >
-                ログイン
-              </button>
+              <SubmitBtn />
             </div>
           </form>
         </div>
+      </div>
+    </>
+  );
+}
+
+function SubmitBtn() {
+  const { pending } = useFormStatus();
+  return (
+    <>
+      <button
+        type="submit"
+        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500"
+        disabled={pending}
+      >
+        {pending ? <LoadingSpiner /> : "ログイン"}
+      </button>
+    </>
+  );
+}
+
+function LoadingSpiner() {
+  return (
+    <>
+      <div className="flex justify-center" aria-label="読み込み中">
+        <div className="animate-spin h-6 w-6 border-4 border-violet-700 rounded-full border-t-transparent"></div>
       </div>
     </>
   );
