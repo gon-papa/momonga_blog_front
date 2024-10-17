@@ -10,9 +10,7 @@ import {
 
 const loginFeatch = (request: Request) => {
   return fetch(request, {
-    next: {
-      revalidate: false,
-    },
+    cache: "no-store",
   });
 };
 

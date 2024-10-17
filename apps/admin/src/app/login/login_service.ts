@@ -1,3 +1,5 @@
+"use server";
+
 import {
   loginFormSchema,
   loginValidation,
@@ -5,37 +7,15 @@ import {
 import { loginPost } from "./login_repository";
 import { loggedInSaveTokens } from "../../utils/auth/auth_service";
 import { LoginResponse } from "@repo/api";
+import { initialState, LoginState } from "./type";
+import { v4 as uuidv4 } from "uuid";
+import { redirect } from "next/navigation";
 
-interface LoginCredentials {
-  user_id: string;
-  password: string;
-}
-
-interface LoginErrors {
-  zod_errors: ZodErrors;
-  message?: string;
-}
-
-export interface LoginState extends LoginCredentials, LoginErrors {}
-
-export const initialState: LoginState = {
-  user_id: "",
-  password: "",
-  zod_errors: {},
-  message: undefined,
-} as const;
-
-export type ZodErrors = {
-  user_id?: string[];
-  password?: string[];
-};
-
-// 型定義ここまで
-
-export const loginAction = async (
+export async function loginAction(
   prevState: LoginState,
   formData: FormData
-): Promise<LoginState> => {
+): Promise<LoginState> {
+  console.log("server", prevState);
   const data = {
     user_id: formData.get("user_id") as string,
     password: formData.get("password") as string,
@@ -53,13 +33,16 @@ export const loginAction = async (
     return {
       ...prevState,
       zod_errors: {},
-      message: "ログインに失敗しました",
+      message: {
+        id: uuidv4(),
+        text: "ログインに失敗しました",
+      },
     };
   }
 
   // Clear the form
   return initialState;
-};
+}
 
 function validation(user_id: string, password: string) {
   return loginValidation.safeParse({
@@ -89,11 +72,10 @@ const success = (res: LoginResponse) => {
 
     loggedInSaveTokens({ token, refreshToken });
     console.log("login success");
-    window.location.href = "/";
+    redirect("/");
   }
 };
 
 const failure = (error: Error) => {
   console.error(error);
-  alert("ログインに失敗しました");
 };

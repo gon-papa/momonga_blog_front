@@ -1,14 +1,32 @@
 "use client";
-
 import { useFormState, useFormStatus } from "react-dom";
-import { initialState, loginAction } from "./login_service";
+import { loginAction } from "./login_service";
+import { initialState } from "./type";
+import { useEffect, useState } from "react";
+import MessageBar from "../components/MessageBar";
 
 export default function Login() {
   const [state, dispatch] = useFormState(loginAction, initialState);
-  // const status = useFormStatus();
+
+  const [showMessage, setShowMessage] = useState(false);
+
+  useEffect(() => {
+    if (state.message.id !== "") {
+      setShowMessage(true);
+    }
+  }, [state.message]);
 
   return (
     <>
+      {state.message && showMessage && (
+        <MessageBar
+          message={state.message.text?.toString() ?? ""}
+          type={"error"} // 必要に応じて type を設定
+          onClose={() => {
+            setShowMessage(false);
+          }}
+        />
+      )}
       <div className="flex min-h-screen flex-1 flex-col justify-center items-center bg-gradient-to-r from-purple-500 via-pink-500 to-red-500">
         <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-xl shadow-lg">
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
