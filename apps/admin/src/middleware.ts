@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAutehnticated } from "./utils/auth/auth_service";
-import { getToken } from "./utils/auth/auth_repository";
+import { isAuthenticated } from "./utils/auth/auth_service";
 
 export function middleware(request: NextRequest) {
   const baseUrl: string = process.env.BASE_URL ?? "http://localhost:3000";
-  if (isAutehnticated()) {
-    if (request.nextUrl.pathname === "/login") {
+  const currentPath = request.nextUrl.pathname;
+
+  if (isAuthenticated()) {
+    if (currentPath === "/login") {
       return NextResponse.redirect(baseUrl);
     }
     return NextResponse.next();
   }
 
-  if (request.nextUrl.pathname === "/login") {
-    return NextResponse.next();
-  } else {
-    return NextResponse.redirect(baseUrl + "/login");
+  if (currentPath !== "/login") {
+    return NextResponse.redirect(`${baseUrl}/login`);
   }
+
+  return NextResponse.next();
 }
 
 export const config = {

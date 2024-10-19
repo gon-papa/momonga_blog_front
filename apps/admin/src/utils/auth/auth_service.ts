@@ -5,7 +5,7 @@ export type Tokens = {
   refreshToken: string;
 };
 
-export function isAutehnticated(): boolean {
+export function isAuthenticated(): boolean {
   const token = getToken();
   return token !== undefined;
 }
