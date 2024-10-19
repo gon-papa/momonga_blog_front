@@ -1,4 +1,4 @@
-import { getTokens, saveRefreshToken, saveToken } from "./auth_repository";
+import { getToken, saveRefreshToken, saveToken } from "./auth_repository";
 
 export type Tokens = {
   token: string;
@@ -6,23 +6,15 @@ export type Tokens = {
 };
 
 export function isAutehnticated(): boolean {
-  if (typeof window !== "undefined") {
-    const token = getTokens().token;
-    return token !== null;
-  }
-  return false;
+  const token = getToken();
+  return token !== undefined;
 }
 
 export function loggedInSaveTokens(tokens: Tokens): boolean {
   try {
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-
-      saveToken(tokens.token);
-      saveRefreshToken(tokens.refreshToken);
-      return true;
-    }
-    return false;
+    saveToken(tokens.token);
+    saveRefreshToken(tokens.refreshToken);
+    return true;
   } catch (e) {
     console.error(e);
     return false;

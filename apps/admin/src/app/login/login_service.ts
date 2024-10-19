@@ -15,7 +15,6 @@ export async function loginAction(
   prevState: LoginState,
   formData: FormData
 ): Promise<LoginState> {
-  console.log("server", prevState);
   const data = {
     user_id: formData.get("user_id") as string,
     password: formData.get("password") as string,

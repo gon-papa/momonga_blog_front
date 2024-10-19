@@ -1,27 +1,50 @@
+import { cookies } from "next/headers";
+
+const cookieOptions = {
+  path: "/",
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  maxAge: 60 * 60 * 24,
+};
+
 export const saveToken = (token: string) => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("momongaBlogAccessToken", token);
-  }
+  const cookieStore = cookies();
+  cookieStore.set("token", token, cookieOptions);
 };
 
 export const saveRefreshToken = (refreshToken: string) => {
-  if (typeof window !== "undefined") {
-    localStorage.setItem("momongaBlogRefreshToken", refreshToken);
-  }
+  const cookieStore = cookies();
+  cookieStore.set("refreshToken", refreshToken, cookieOptions);
+};
+
+export const getToken = () => {
+  const cookieStore = cookies();
+  return cookieStore.get("token");
+};
+
+export const getRefreshToken = () => {
+  const cookieStore = cookies();
+  return cookieStore.get("refreshToken");
 };
 
 export const getTokens = () => {
-  if (typeof window !== "undefined") {
-    const token = localStorage.getItem("momongaBlogAccessToken");
-    const refreshToken = localStorage.getItem("momongaBlogRefreshToken");
-    return { token, refreshToken };
-  }
-  return { token: null, refreshToken: null };
+  return {
+    token: getToken(),
+    refreshToken: getRefreshToken(),
+  };
+};
+
+export const removeToken = () => {
+  const cookieStore = cookies();
+  cookieStore.delete("token");
+};
+
+export const removeRefreshToken = () => {
+  const cookieStore = cookies();
+  cookieStore.delete("refreshToken");
 };
 
 export const removeTokens = () => {
-  if (typeof window !== "undefined") {
-    localStorage.removeItem("momongaBlogAccessToken");
-    localStorage.removeItem("momongaBlogRefreshToken");
-  }
+  removeToken();
+  removeRefreshToken();
 };

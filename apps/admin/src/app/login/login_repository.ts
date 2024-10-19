@@ -11,6 +11,7 @@ import {
 const loginFeatch = (request: Request) => {
   return fetch(request, {
     cache: "no-store",
+    credentials: "include",
   });
 };
 
